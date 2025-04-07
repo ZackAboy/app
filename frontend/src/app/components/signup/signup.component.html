@@ -1,0 +1,62 @@
+<div class="container mt-5">
+  <h2 class="text-center mb-4">Sign Up</h2>
+  <form (ngSubmit)="onSignup(signupForm)" #signupForm="ngForm" class="w-50 mx-auto">
+    
+    <!-- Full Name -->
+    <div class="form-group mb-3">
+      <label for="fullname">Full Name</label>
+      <input
+        [(ngModel)]="fullname"
+        name="fullname"
+        type="text"
+        class="form-control"
+        id="fullname"
+        required
+      />
+      <div *ngIf="fullnameError" class="text-danger mt-1">{{ fullnameError }}</div>
+    </div>
+
+    <!-- Email -->
+    <div class="form-group mb-3">
+      <label for="email">Email</label>
+      <input
+        [(ngModel)]="email"
+        name="email"
+        type="email"
+        class="form-control"
+        id="email"
+        required
+        email
+      />
+      <div *ngIf="emailError" class="text-danger mt-1">{{ emailError }}</div>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group mb-3">
+      <label for="password">Password</label>
+      <input
+        [(ngModel)]="password"
+        name="password"
+        type="password"
+        class="form-control"
+        id="password"
+        required
+      />
+      <div *ngIf="passwordError" class="text-danger mt-1">{{ passwordError }}</div>
+    </div>
+
+    <!-- Submit -->
+    <button
+      type="submit"
+      class="btn btn-success w-100"
+      [disabled]="!signupForm.form.valid"
+    >
+      Create Account
+    </button>
+
+    <!-- Global error -->
+    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+      {{ errorMessage }}
+    </div>
+  </form>
+</div>
