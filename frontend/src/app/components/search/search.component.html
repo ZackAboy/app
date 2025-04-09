@@ -1,1 +1,84 @@
-<p>search works!</p>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Artist Search</h2>
+  
+    <!-- Search Bar -->
+    <form (ngSubmit)="onSearch()" class="input-group mb-4 w-75 mx-auto">
+      <input
+        [(ngModel)]="searchTerm"
+        name="search"
+        type="text"
+        class="form-control"
+        placeholder="Search for artists..."
+        required
+      />
+      <button class="btn btn-primary" type="submit" [disabled]="!searchTerm.trim()">Search</button>
+      <button class="btn btn-secondary" type="button" (click)="clearSearch()">Clear</button>
+    </form>
+  
+    <!-- General Loading -->
+    <div *ngIf="loading" class="text-center">
+      <p>Loading search results...</p>
+    </div>
+  
+    <!-- General Error -->
+    <div *ngIf="errorMessage" class="alert alert-warning text-center">
+      {{ errorMessage }}
+    </div>
+  
+    <!-- Search Results View -->
+    <div *ngIf="!showArtistDetails && artists.length > 0" class="row">
+      <div
+        *ngFor="let artist of artists"
+        class="col-md-3 mb-4"
+        (click)="onArtistClick(artist.id)"
+        style="cursor: pointer"
+      >
+        <div class="card">
+          <img
+            [src]="artist.image || 'assets/artsy_logo.svg'"
+            class="card-img-top"
+            alt="Artist Image"
+          />
+          <div class="card-body">
+            <h5 class="card-title text-center">{{ artist.name }}</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+    <!-- Artist Detail View -->
+    <div *ngIf="showArtistDetails" class="mt-5">
+      <button class="btn btn-outline-secondary mb-4" (click)="backToResults()">← Back to Results</button>
+  
+      <!-- Artist Info Loading -->
+      <div *ngIf="artistLoading" class="text-center">
+        <p>Loading artist details...</p>
+      </div>
+  
+      <!-- Artist Info -->
+      <div *ngIf="artistDetails">
+        <h3 class="text-center">{{ artistDetails.name }}</h3>
+        <p class="text-center">{{ artistDetails.biography || 'No biography available.' }}</p>
+  
+        <!-- Artworks -->
+        <div *ngIf="artistDetails.artworks?.length > 0" class="row mt-4">
+          <div *ngFor="let artwork of artistDetails.artworks" class="col-md-3 mb-4">
+            <div class="card">
+              <img
+                [src]="artwork.image || 'assets/artsy_logo.svg'"
+                class="card-img-top"
+                alt="Artwork"
+              />
+              <div class="card-body">
+                <h6 class="card-title text-center">{{ artwork.title }}</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <div *ngIf="artistDetails.artworks?.length === 0" class="text-center text-muted mt-3">
+          No artworks found.
+        </div>
+      </div>
+    </div>
+  </div>  
