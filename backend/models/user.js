@@ -20,9 +20,18 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   favorites: {
-    type: [String],
+    type: [
+      {
+        artistId: { type: String, required: true },
+        name: { type: String, required: true },
+        image: { type: String, required: true },
+        nationality: { type: String },
+        birthDeath: { type: String },
+        addedAt: { type: Date, default: Date.now }
+      }
+    ],
     default: []
-  }
+  }   
 });
 
 module.exports = mongoose.model('User', userSchema);

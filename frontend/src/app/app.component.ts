@@ -4,36 +4,45 @@ import { Router, NavigationEnd, RouterOutlet, RouterModule } from '@angular/rout
 import { UserService } from './services/user.service';
 import { filter } from 'rxjs/operators';
 
+interface Toast {
+  message: string;
+  show: boolean;
+  color: 'success' | 'danger';
+}
+
 @Component({
   selector: 'app-root',
-  standalone: true,
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    RouterModule
-  ]
 })
 export class AppComponent implements OnInit {
   title = 'frontend';
   isLoggedIn = false;
   userName = 'Guest';
+  userGravatarUrl = 'https://www.gravatar.com/avatar/?d=identicon';
   currentRoute = '';
+
+  // Toasts will live globally here
+  toasts: Toast[] = [];
 
   constructor(private userService: UserService, private router: Router) {}
 
   ngOnInit(): void {
-    // Check the cookie and update user state
     this.userService.checkLoginStatus();
-    
-    // Subscribe to the login state observable from the UserService
+
     this.userService.loginState$.subscribe((isLoggedIn) => {
       this.isLoggedIn = isLoggedIn;
-      this.userName = isLoggedIn ? this.userService.getUser()?.fullname || 'User' : 'Guest';
+
+      const user = this.userService.getUser();
+      if (isLoggedIn && user) {
+        this.userName = user.fullname;
+        this.userGravatarUrl = user.profileImageUrl;
+      } else {
+        this.userName = 'Guest';
+        this.userGravatarUrl = 'https://www.gravatar.com/avatar/?d=identicon';
+      }
     });
-    
-    // Subscribe to router events using a type guard so that only NavigationEnd events are processed
+
     this.router.events.pipe(
       filter((event): event is NavigationEnd => event instanceof NavigationEnd)
     ).subscribe((event: NavigationEnd) => {
@@ -41,14 +50,59 @@ export class AppComponent implements OnInit {
     });
   }
 
+  // Global toast handler
+  showToast(message: string, color: 'success' | 'danger' = 'success', duration: number = 3000): void {
+    const toast: Toast = { message, show: true, color };
+    this.toasts.push(toast);
+
+    setTimeout(() => {
+      toast.show = false;
+      setTimeout(() => {
+        this.toasts = this.toasts.filter(t => t !== toast);
+      }, 500);
+    }, duration);
+  }
+
   logout(): void {
-    this.userService.logout();
-  
-    if (this.router.url === '/') {
-      // Full browser reload if already on search
-      window.location.href = '/';
-    } else {
-      this.router.navigate(['/']);
-    }
-  }   
+    fetch('http://localhost:8080/api/auth/logout', {
+      method: 'POST',
+      credentials: 'include'
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Logout failed');
+        this.showToast('Logged out successfully', 'success');
+        
+        // Clear local storage on logout
+        localStorage.removeItem('artists');
+        localStorage.removeItem('favoriteArtistIds');
+        localStorage.removeItem('searchTerm');
+        localStorage.removeItem('favorites');
+      })
+      .catch(err => {
+        console.error('Logout API error:', err);
+        this.showToast('Logout failed', 'danger');
+      })
+      .finally(() => {
+        this.userService.setLoggedOut();
+        if (this.router.url === '/') {
+          window.location.reload(); // Force reload
+        } else {
+          this.router.navigate(['/']).then(() => {
+            window.location.reload();
+          });
+        }
+      });
+  }  
+
+  deleteAccount(): void {
+    fetch('http://localhost:8080/api/auth/delete', {
+      method: 'POST',
+      credentials: 'include'
+    }).then(() => {
+      this.logout();
+    }).catch(err => {
+      console.error('Delete failed:', err);
+      this.showToast('Account deletion failed', 'danger');
+    });
+  }
 }

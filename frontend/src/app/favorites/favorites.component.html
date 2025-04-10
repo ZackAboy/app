@@ -1,0 +1,28 @@
+<div class="favorites-container container mt-4">
+    <h2 class="mb-4">Your Favorite Artists</h2>
+  
+    <div *ngIf="favoriteArtists.length === 0" class="alert alert-info">
+      You have no favorite artists yet.
+    </div>
+  
+    <div class="favorites-grid" *ngIf="favoriteArtists.length">
+      <div *ngFor="let artist of favoriteArtists" class="favorite-card card text-white position-relative">
+        <img [src]="artist.image || 'assets/artsy_logo.svg'" class="card-img" alt="{{ artist.name }}" />
+        <div class="card-overlay"></div>
+  
+        <div class="card-img-overlay d-flex flex-column justify-content-between">
+          <div class="top-text">
+            <h5 class="card-title">{{ artist.name }}</h5>
+            <p class="card-text small">
+              {{ artist.birthday }}{{ artist.deathday ? ' - ' + artist.deathday : '' }}<br>
+              {{ artist.nationality }}
+            </p>
+          </div>
+          <div class="bottom-text d-flex justify-content-between align-items-end">
+            <small>{{ artist.timeAgo }}</small>
+            <a href="#" (click)="removeFromFavorites(artist.artistId); $event.preventDefault()" class="text-white text-decoration-underline">Remove</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>  

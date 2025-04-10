@@ -62,6 +62,7 @@ body {
   background-color: #205375;
   color: white;
   transition: transform 0.2s, background-color 0.2s;
+  position: relative;
 }
 
 .artist-card:hover {
@@ -124,6 +125,7 @@ body {
   background-color: #0d6efd;
   color: white;
 }
+
 .artwork-grid {
   display: flex;
   flex-wrap: wrap;
@@ -154,4 +156,91 @@ body {
   font-size: 0.85rem;
   font-weight: normal;
   color: #333;
+}
+
+/* Wrapper to center artist info and similar artists */
+.artist-details-wrapper {
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+/* Grid for exactly 5 similar artists */
+.similar-artist-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  width: 850px;
+  margin: 0 auto;
+}
+
+/* Smaller artist cards for similar artists */
+.similar-artist-card {
+  width: 150px;
+  height: 15rem;
+  background-color: #205375;
+  color: white;
+  transition: background-color 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.similar-artist-card:hover {
+  background-color: #112B3C;
+}
+
+.similar-artist-card img {
+  width: 100%;
+  height: 11rem;
+  object-fit: cover;
+}
+
+.similar-artist-card .card-footer {
+  background-color: transparent;
+  border-top: none;
+  padding: 0.4rem;
+  text-align: center;
+}
+
+/* Star on top right (card view) */
+.favorite-icon {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 18px;
+  cursor: pointer;
+  user-select: none;
+  color: white;
+  background-color: #205375;
+  border-radius: 50%;
+  width: 29px;
+  height: 29px;
+  text-align: center;
+  line-height: 22px;
+  padding: 2px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.favorite-icon:hover {
+  color: gold;
+}
+
+/* Inline star next to artist name (details view) */
+.favorite-icon-inline {
+  display: inline-block;
+  font-size: 18px;
+  margin-left: 10px;
+  cursor: pointer;
+  user-select: none;
+  color: #ccc;
+  vertical-align: middle;
+  transition: color 0.2s;
+}
+
+.favorite-icon-inline:hover {
+  color: gold;
+}
+
+/* Active (favorited) state */
+.favorited {
+  color: gold !important;
 }

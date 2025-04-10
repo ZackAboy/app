@@ -8,10 +8,8 @@ import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-signup',
-  standalone: true,
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css'],
-  imports: [FormsModule, CommonModule, RouterModule]
 })
 export class SignupComponent {
   fullname: string = '';
@@ -46,10 +44,9 @@ export class SignupComponent {
       payload,
       { withCredentials: true }
     ).subscribe({
-      next: (res) => {
+      next: (res:any) => {
         console.log('✅ Signup successful:', res);
-        this.userService.setLoggedIn(res.fullname, res.email);
-
+        this.userService.setLoggedIn(res.fullname, res.email, res.profileImageUrl); // ✅
         // ✅ Safe router navigation inside Angular zone
         this.ngZone.run(() => {
           this.router.navigate(['/']);

@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { UserService } from '../../services/user.service';
+import { AppComponent } from '../../app.component';
 
 interface Artwork {
   id: string;
@@ -12,10 +14,8 @@ interface Artwork {
 
 @Component({
   selector: 'app-search',
-  standalone: true,
   templateUrl: './search.component.html',
-  styleUrls: ['./search.component.css'],
-  imports: [FormsModule, CommonModule]
+  styleUrls: ['./search.component.css']
 })
 export class SearchComponent {
   searchTerm: string = '';
@@ -35,7 +35,58 @@ export class SearchComponent {
   artworkCategories: any[] = [];
   artworksLoading: boolean = false;
 
-  constructor(private http: HttpClient) {}
+  similarArtists: any[] = [];
+  isLoggedIn: boolean = false;
+
+  favoriteArtistIds = new Set<string>();
+
+  constructor(private http: HttpClient, private userService: UserService, private appComponent: AppComponent) {
+    this.userService.loginState$.subscribe((state) => {
+      this.isLoggedIn = state;
+      if (this.isLoggedIn) {
+        this.fetchFavorites();
+      } else {
+        this.favoriteArtistIds.clear();
+      }
+    });
+  }
+
+  fetchFavorites(): void {
+    if (!this.isLoggedIn) return;
+    this.http.get<any[]>(`http://localhost:8080/api/user/favorites`, {
+      withCredentials: true
+    }).subscribe({
+      next: (favs) => {
+        this.favoriteArtistIds = new Set(favs.map(f => f.artistId));
+      },
+      error: () => {
+        this.favoriteArtistIds.clear();
+      }
+    });
+  }
+
+  toggleFavorite(artistId: string, event: MouseEvent): void {
+    event.stopPropagation();
+
+    const url = this.favoriteArtistIds.has(artistId)
+      ? `http://localhost:8080/api/user/favorites/remove`
+      : `http://localhost:8080/api/user/favorites/add`;
+
+    this.http.post(url, { artistId }, { withCredentials: true }).subscribe({
+      next: () => {
+        if (this.favoriteArtistIds.has(artistId)) {
+          this.favoriteArtistIds.delete(artistId);
+          this.appComponent.showToast('Removed from favorites', 'danger');
+        } else {
+          this.favoriteArtistIds.add(artistId);
+          this.appComponent.showToast('Added to favorites', 'success');
+        }
+      },
+      error: () => {
+        this.appComponent.showToast('Failed to update favorites', 'danger');
+      }
+    });
+  }
 
   onSearch(): void {
     if (!this.searchTerm.trim()) return;
@@ -43,22 +94,24 @@ export class SearchComponent {
     this.errorMessage = '';
     this.artists = [];
     this.artistDetails = null;
+    this.similarArtists = [];
     this.selectedArtistId = null;
     this.showArtistDetails = false;
     this.loading = true;
 
-    this.http.get<any[]>(`http://localhost:8080/api/search?q=${this.searchTerm}`, { withCredentials: true })
-      .subscribe({
-        next: (res) => {
-          this.artists = res;
-          if (res.length === 0) this.errorMessage = 'No results found.';
-          this.loading = false;
-        },
-        error: (err) => {
-          this.errorMessage = err.error?.message || 'Search failed.';
-          this.loading = false;
-        }
-      });
+    this.http.get<any[]>(`http://localhost:8080/api/search?q=${this.searchTerm}`, {
+      withCredentials: true
+    }).subscribe({
+      next: (res) => {
+        this.artists = res;
+        if (res.length === 0) this.errorMessage = 'No results found.';
+        this.loading = false;
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Search failed.';
+        this.loading = false;
+      }
+    });
   }
 
   onArtistClick(artistId: string): void {
@@ -66,14 +119,17 @@ export class SearchComponent {
     this.showArtistDetails = true;
     this.artistLoading = true;
     this.artistDetails = null;
+    this.similarArtists = [];
     this.errorMessage = '';
     this.activeTab = 'info';
 
-    this.http.get<any>(`http://localhost:8080/api/artist?id=${artistId}`, { withCredentials: true }).subscribe({
+    this.http.get<any>(`http://localhost:8080/api/artist?id=${artistId}`, {
+      withCredentials: true
+    }).subscribe({
       next: (res) => {
         this.artistDetails = { ...res, id: artistId };
+        this.similarArtists = res.similarArtists || [];
         this.artistLoading = false;
-        console.log('Artist details:', this.artistDetails);
       },
       error: (err) => {
         this.errorMessage = err.error?.message || 'Failed to load artist details.';
@@ -84,7 +140,6 @@ export class SearchComponent {
 
   switchTab(tab: 'info' | 'artworks'): void {
     this.activeTab = tab;
-
     if (
       tab === 'artworks' &&
       this.artistDetails &&
@@ -131,6 +186,7 @@ export class SearchComponent {
   clearSearch(): void {
     this.searchTerm = '';
     this.artists = [];
+    this.similarArtists = [];
     this.selectedArtistId = null;
     this.artistDetails = null;
     this.errorMessage = '';

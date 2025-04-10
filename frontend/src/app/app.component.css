@@ -84,3 +84,49 @@ body {
   main.flex-grow-1 {
     margin-bottom: 3rem;
   }  
+  /* Global styles for Toast notifications */
+  .toast-container {
+    z-index: 1100;
+    position: fixed;
+    top: 60px; /* Adjust based on navbar height */
+    right: 15px;
+    width: auto;
+    max-width: 300px; /* Control the width */
+  }
+
+/* Global styles for Toast notifications */
+.toast-container {
+  position: fixed;
+  top: 70px; /* Adjust based on navbar height */
+  right: 15px;
+  width: auto;
+  max-width: 300px;
+  z-index: 1100; /* Ensure it's above other content */
+}
+
+/* Style for individual toast */
+.toast {
+  width: 100%; /* Ensure it takes the width defined by the container */
+  min-height: 40px; /* Adjusted height */
+  border-radius: 4px;
+  padding: 10px; /* Add some padding for spacing */
+  font-size: 0.875rem; /* Smaller font size for the message */
+  margin-bottom: 10px; /* Space between consecutive toasts */
+}
+
+.bg-success {
+  background-color: #28a745; /* Green for added to favorites */
+}
+
+.bg-danger {
+  background-color: #dc3545; /* Red for removed from favorites */
+}
+
+.toast-body {
+  padding: 10px;
+  font-size: 0.875rem; /* Font size for the message */
+}
+
+.btn-close-white {
+  color: white;
+}

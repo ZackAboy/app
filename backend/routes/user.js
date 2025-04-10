@@ -3,6 +3,7 @@ const router = express.Router();
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const axios = require('axios');  // Import axios
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key';
 
@@ -51,14 +52,38 @@ router.post('/favorites/add', authenticate, async (req, res) => {
 
   try {
     const user = await User.findById(userId);
-    if (user.favorites.includes(artistId)) {
+
+    const alreadyExists = user.favorites.some(fav => fav.artistId === artistId);
+    if (alreadyExists) {
       return res.status(409).json({ message: 'Artist already in favorites' });
     }
 
-    user.favorites.push(artistId);
+    // Fetch full artist bio from your own API
+    const response = await axios.get(`http://localhost:8080/api/artist?id=${artistId}`);
+    const artist = response.data;
+
+    if (!artist || !artist.name) {
+      return res.status(404).json({ message: 'Artist details not found' });
+    }
+
+    // Format birth-death string
+    const birthDeath = artist.birthday || artist.deathday
+      ? `${artist.birthday || ''}${artist.deathday ? ' - ' + artist.deathday : ''}`
+      : '';
+
+    user.favorites.push({
+      artistId,
+      name: artist.name,
+      image: artist.image,
+      nationality: artist.nationality,
+      birthDeath,
+      addedAt: new Date()
+    });
+
     await user.save();
     res.status(200).json({ message: 'Artist added to favorites' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Error adding to favorites' });
   }
 });
@@ -74,7 +99,7 @@ router.post('/favorites/remove', authenticate, async (req, res) => {
 
   try {
     const user = await User.findById(userId);
-    const index = user.favorites.indexOf(artistId);
+    const index = user.favorites.findIndex(fav => fav.artistId.toString() === artistId);
     if (index === -1) {
       return res.status(404).json({ message: 'Artist not found in favorites' });
     }
@@ -83,7 +108,30 @@ router.post('/favorites/remove', authenticate, async (req, res) => {
     await user.save();
     res.status(200).json({ message: 'Artist removed from favorites' });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: 'Error removing from favorites' });
+  }
+});
+
+// GET /api/user/favorites
+router.get('/favorites', authenticate, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    // Create an array of favorites with artist data and addedAt time
+    const favoritesWithDetails = user.favorites.map(fav => ({
+      artistId: fav.artistId,
+      name: fav.name,
+      image: fav.image,
+      nationality: fav.nationality,
+      birthDeath: fav.birthDeath,
+      addedAt: fav.addedAt
+    }));    
+
+    res.status(200).json(favoritesWithDetails);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch favorites' });
   }
 });
 

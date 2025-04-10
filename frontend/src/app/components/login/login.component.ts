@@ -9,10 +9,8 @@ import { NgZone } from '@angular/core';
 
 @Component({
   selector: 'app-login',
-  standalone: true,
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
-  imports: [FormsModule, CommonModule, RouterModule]
 })
 export class LoginComponent {
   email: string = '';
@@ -41,7 +39,7 @@ export class LoginComponent {
         console.log('✅ Login successful:', res);
       
         // ✅ Update the user service with fullname and email
-        this.userService.setLoggedIn(res.fullname, res.email);
+        this.userService.setLoggedIn(res.fullname, res.email, res.profileImageUrl); // ✅
       
         // ✅ Navigate to search
         this.ngZone.run(() => {

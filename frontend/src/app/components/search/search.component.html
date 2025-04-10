@@ -17,27 +17,35 @@
     </div>
   </form>
 
-  <!-- Fullscreen Loading Spinner -->
+  <!-- Loading Spinner -->
   <div *ngIf="loading" class="fullscreen-spinner">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
 
-  <!-- Error Message -->
+  <!-- Error -->
   <div *ngIf="errorMessage" class="alert alert-warning">
     {{ errorMessage }}
   </div>
 
-  <!-- Artists List - Horizontal Scroll -->
+  <!-- Search Results -->
   <div *ngIf="artists?.length" class="horizontal-scroll-container mb-3">
     <div class="horizontal-scroll-content">
       <div
         *ngFor="let artist of artists"
-        class="card artist-card me-3"
+        class="card artist-card me-3 position-relative"
         [class.selected]="artist.id === selectedArtistId"
         (click)="onArtistClick(artist.id)"
       >
+        <span
+          *ngIf="isLoggedIn"
+          class="favorite-icon"
+          (click)="toggleFavorite(artist.id, $event)"
+          [ngClass]="{ favorited: favoriteArtistIds.has(artist.id) }"
+          title="Toggle Favorite"
+        >&#9733;</span>
+
         <img
           [src]="artist.image === 'static/artsy_logo.svg' ? 'assets/artsy_logo.svg' : artist.image"
           class="card-img-top"
@@ -58,8 +66,8 @@
       </div>
     </div>
 
-    <div *ngIf="!artistLoading && artistDetails">
-      <!-- Tab Buttons -->
+    <div *ngIf="!artistLoading && artistDetails" class="artist-details-wrapper">
+      <!-- Tabs -->
       <div class="tab-buttons d-flex justify-content-center mb-3">
         <button class="tab-btn" [class.active]="activeTab === 'info'" (click)="switchTab('info')">Artist Info</button>
         <button class="tab-btn" [class.active]="activeTab === 'artworks'" (click)="switchTab('artworks')">Artworks</button>
@@ -67,7 +75,16 @@
 
       <!-- Info Tab -->
       <div *ngIf="activeTab === 'info'">
-        <h3 class="text-center mb-1">{{ artistDetails.name }}</h3>
+        <h3 class="text-center mb-1">
+          {{ artistDetails.name }}
+          <span
+            *ngIf="isLoggedIn"
+            class="favorite-icon-inline"
+            (click)="toggleFavorite(artistDetails.id, $event)"
+            [ngClass]="{ favorited: favoriteArtistIds.has(artistDetails.id) }"
+            title="Toggle Favorite"
+          >&#9733;</span>
+        </h3>
         <p class="text-center text-muted small">
           {{ artistDetails.nationality }}{{ artistDetails.birthday || artistDetails.deathday ? ', ' : '' }}
           {{ artistDetails.birthday }}{{ artistDetails.deathday ? ' - ' + artistDetails.deathday : '' }}
@@ -110,11 +127,40 @@
           </ng-template>
         </div>
       </div>
+
+      <!-- Similar Artists -->
+      <div *ngIf="isLoggedIn && similarArtists.length" class="mt-5">
+        <h5 class="text-start mb-3">Similar Artists</h5>
+        <div class="similar-artist-grid">
+          <div
+            *ngFor="let artist of similarArtists.slice(0, 5)"
+            class="card similar-artist-card position-relative"
+            (click)="onArtistClick(artist.id)"
+          >
+            <span
+              *ngIf="isLoggedIn"
+              class="favorite-icon"
+              (click)="toggleFavorite(artist.id, $event)"
+              [ngClass]="{ favorited: favoriteArtistIds.has(artist.id) }"
+              title="Toggle Favorite"
+            >&#9733;</span>
+
+            <img
+              [src]="artist.image === 'static/artsy_logo.svg' ? 'assets/artsy_logo.svg' : artist.image"
+              alt="{{ artist.name }}"
+            />
+            <div class="card-footer text-white text-center">
+              <h5 class="card-title m-0 p-2">{{ artist.name }}</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Similar Artists -->
     </div>
   </div>
 </div>
 
-<!-- Bootstrap Modal for Artwork Categories -->
+<!-- Modal -->
 <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content">

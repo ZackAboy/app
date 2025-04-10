@@ -38,12 +38,10 @@ const blockIfAuthenticated = (req, res, next) => {
 router.post('/signup', blockIfAuthenticated, async (req, res) => {
     const { fullname, email, password } = req.body;
 
-    // Basic field validation
     if (!fullname || !email || !password) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Email format validation
     const emailRegex = /^\S+@\S+\.\S+$/;
     if (!emailRegex.test(email)) {
         return res.status(400).json({ message: 'Invalid email format' });
@@ -55,7 +53,6 @@ router.post('/signup', blockIfAuthenticated, async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Generate SHA256 hash for Gravatar
         const hash = crypto.createHash('sha256').update(email.trim().toLowerCase()).digest('hex');
         const profileImageUrl = `https://www.gravatar.com/avatar/${hash}?d=identicon`;
 
@@ -75,11 +72,12 @@ router.post('/signup', blockIfAuthenticated, async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             maxAge: 3600000 // 1 hour
-          }).status(201).json({
+        }).status(201).json({
             message: 'Signup successful',
-            fullname: newUser.fullname, // ✅ Send this
-            email: newUser.email        // ✅ Send this
-          });          
+            fullname: newUser.fullname,
+            email: newUser.email,
+            profileImageUrl: newUser.profileImageUrl
+        });
 
     } catch (err) {
         console.error('Signup error:', err);
@@ -104,11 +102,13 @@ router.post('/login', blockIfAuthenticated, async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             maxAge: 3600000 // 1 hour
-          }).status(200).json({
+        }).status(200).json({
             message: 'Login successful',
-            fullname: user.fullname, // ✅ Send user's name
-            email: user.email         // ✅ Send user's email
-          });          
+            fullname: user.fullname,
+            email: user.email,
+            profileImageUrl: user.profileImageUrl
+        });
+
     } catch (err) {
         res.status(500).json({ message: 'Server error during login' });
     }
@@ -124,9 +124,22 @@ router.post('/logout', authenticate, (req, res) => {
     res.status(200).json({ message: 'Logged out successfully' });
 });
 
-// ✅ GET /api/auth/verify
-router.get('/verify', authenticate, (req, res) => {
-    res.status(200).json({ message: 'User is logged in', email: req.user.email });
+// ✅ GET /api/auth/verify — FIXED to return all user details
+router.get('/verify', authenticate, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        res.status(200).json({
+            message: 'User is logged in',
+            email: user.email,
+            fullname: user.fullname,
+            profileImageUrl: user.profileImageUrl
+        });
+    } catch (err) {
+        console.error('Verify error:', err);
+        res.status(500).json({ message: 'Server error during verification' });
+    }
 });
 
 // ✅ POST /api/auth/delete
