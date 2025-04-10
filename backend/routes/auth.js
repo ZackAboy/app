@@ -75,7 +75,11 @@ router.post('/signup', blockIfAuthenticated, async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             maxAge: 3600000 // 1 hour
-        }).status(201).json({ message: 'Signup successful' });
+          }).status(201).json({
+            message: 'Signup successful',
+            fullname: newUser.fullname, // ✅ Send this
+            email: newUser.email        // ✅ Send this
+          });          
 
     } catch (err) {
         console.error('Signup error:', err);
@@ -100,7 +104,11 @@ router.post('/login', blockIfAuthenticated, async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'Strict',
             maxAge: 3600000 // 1 hour
-        }).status(200).json({ message: 'Login successful' });
+          }).status(200).json({
+            message: 'Login successful',
+            fullname: user.fullname, // ✅ Send user's name
+            email: user.email         // ✅ Send user's email
+          });          
     } catch (err) {
         res.status(500).json({ message: 'Server error during login' });
     }

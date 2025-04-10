@@ -1,0 +1,86 @@
+/* Global font style */
+body {
+    font-family: Calibri, sans-serif;
+    font-weight: normal;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Header styles */
+  .navbar-custom {
+    background-color: #f1f1f1; /* Light grey */
+    padding: 0;  /* Remove all padding */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .navbar-custom .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* padding: 0 1.5rem; Increased horizontal breathing room */
+  }
+  
+  /* Brand title */
+  .navbar-brand {
+    font-size: 1.75rem;
+    font-weight: normal;
+    color: #333;
+    text-decoration: none;
+  }
+  
+  /* Navigation buttons — allow Bootstrap’s btn styling to take precedence */
+  .nav-buttons a,
+  .nav-buttons button {
+    margin-left: 0.5rem;
+  }
+  
+  /* Active route button highlight */
+  .nav-buttons .active {
+    background-color: #205375 !important;
+    color: white !important;
+    border: none;
+  }
+  
+  /* Welcome message */
+  .welcome-text {
+    margin-left: 1rem;
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  /* Footer styles */
+  .footer-custom {
+    background-color: #112B3C;
+    color: white;
+    padding: 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  
+  .footer-custom .container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.95rem;
+    padding: 0.5rem;
+  }
+  
+  .footer-logo {
+    height: 20px;
+    vertical-align: middle;
+    margin: 0 0.5rem;
+  }
+  
+  .footer-link {
+    color: white;
+    text-decoration: underline;
+  }
+  
+  /* Ensure main content is not hidden behind the fixed footer */
+  main.flex-grow-1 {
+    margin-bottom: 3rem;
+  }  

@@ -1,66 +1,65 @@
-<div class="container mt-5">
-  <h2 class="text-center mb-4">Sign Up</h2>
-  <form (ngSubmit)="onSignup(signupForm)" #signupForm="ngForm" class="w-50 mx-auto">
-    
-    <!-- Full Name -->
-    <div class="form-group mb-3">
-      <label for="fullname">Full Name</label>
-      <input
-        [(ngModel)]="fullname"
-        name="fullname"
-        type="text"
-        class="form-control"
-        id="fullname"
-        required
-      />
-      <div *ngIf="fullnameError" class="text-danger mt-1">{{ fullnameError }}</div>
-    </div>
+<div class="container mt-5 d-flex justify-content-center">
+  <div class="card p-4 shadow-sm" style="width: 100%; max-width: 400px;">
+    <h4 class="text-center mb-3">Register</h4>
 
-    <!-- Email -->
-    <div class="form-group mb-3">
-      <label for="email">Email</label>
-      <input
-        [(ngModel)]="email"
-        name="email"
-        type="email"
-        class="form-control"
-        id="email"
-        required
-        email
-      />
-      <div *ngIf="emailError" class="text-danger mt-1">{{ emailError }}</div>
-    </div>
+    <form (ngSubmit)="onSignup(signupForm)" #signupForm="ngForm">
+      <div class="form-group mb-3">
+        <label for="fullname">Fullname</label>
+        <input
+          [(ngModel)]="fullname"
+          name="fullname"
+          type="text"
+          class="form-control"
+          id="fullname"
+          placeholder="John Doe"
+          required
+        />
+        <div *ngIf="fullnameError" class="text-danger mt-1">{{ fullnameError }}</div>
+      </div>
 
-    <!-- Password -->
-    <div class="form-group mb-3">
-      <label for="password">Password</label>
-      <input
-        [(ngModel)]="password"
-        name="password"
-        type="password"
-        class="form-control"
-        id="password"
-        required
-      />
-      <div *ngIf="passwordError" class="text-danger mt-1">{{ passwordError }}</div>
-    </div>
+      <div class="form-group mb-3">
+        <label for="email">Email address</label>
+        <input
+          [(ngModel)]="email"
+          name="email"
+          type="email"
+          class="form-control"
+          id="email"
+          placeholder="Enter email"
+          required
+        />
+        <div *ngIf="emailError" class="text-danger mt-1">{{ emailError }}</div>
+      </div>
 
-    <!-- Submit -->
-    <button
-      type="submit"
-      class="btn btn-success w-100"
-      [disabled]="!signupForm.form.valid"
-    >
-      Create Account
-    </button>
+      <div class="form-group mb-3">
+        <label for="password">Password</label>
+        <input
+          [(ngModel)]="password"
+          name="password"
+          type="password"
+          class="form-control"
+          id="password"
+          placeholder="Password"
+          required
+        />
+        <div *ngIf="passwordError" class="text-danger mt-1">{{ passwordError }}</div>
+      </div>
 
-    <!-- Global error -->
-    <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-      {{ errorMessage }}
+      <button
+        type="submit"
+        class="btn btn-primary w-100"
+        [disabled]="!signupForm.form.valid"
+      >
+        Register
+      </button>
+
+      <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+        {{ errorMessage }}
+      </div>
+    </form>
+
+    <div class="text-center mt-3 small">
+      Already have an account? <a [routerLink]="['/login']">Login</a>
     </div>
-  </form>
-  <div class="text-center mt-3">
-    <span>Already registered?</span>
-    <a [routerLink]="['/login']" class="btn btn-link">Login here</a>
-  </div>    
+  </div>
 </div>

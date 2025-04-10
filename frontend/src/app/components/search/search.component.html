@@ -1,84 +1,143 @@
-<div class="container mt-5">
-    <h2 class="text-center mb-4">Artist Search</h2>
-  
-    <!-- Search Bar -->
-    <form (ngSubmit)="onSearch()" class="input-group mb-4 w-75 mx-auto">
+<div class="search-container container">
+  <!-- Search Form -->
+  <form (ngSubmit)="onSearch()" class="search-form mb-3">
+    <div class="input-group">
       <input
-        [(ngModel)]="searchTerm"
-        name="search"
         type="text"
-        class="form-control"
-        placeholder="Search for artists..."
+        class="form-control search-input"
+        [(ngModel)]="searchTerm"
+        name="searchTerm"
+        placeholder="Please enter an artist name."
         required
+        (focus)="inputFocused = true"
+        (blur)="inputFocused = false"
       />
-      <button class="btn btn-primary" type="submit" [disabled]="!searchTerm.trim()">Search</button>
-      <button class="btn btn-secondary" type="button" (click)="clearSearch()">Clear</button>
-    </form>
-  
-    <!-- General Loading -->
-    <div *ngIf="loading" class="text-center">
-      <p>Loading search results...</p>
+      <button type="submit" class="btn btn-primary" [disabled]="!searchTerm.trim() || loading">Search</button>
+      <button type="button" class="btn btn-secondary" (click)="clearSearch()">Clear</button>
     </div>
-  
-    <!-- General Error -->
-    <div *ngIf="errorMessage" class="alert alert-warning text-center">
-      {{ errorMessage }}
+  </form>
+
+  <!-- Fullscreen Loading Spinner -->
+  <div *ngIf="loading" class="fullscreen-spinner">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
     </div>
-  
-    <!-- Search Results View -->
-    <div *ngIf="!showArtistDetails && artists.length > 0" class="row">
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-warning">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Artists List - Horizontal Scroll -->
+  <div *ngIf="artists?.length" class="horizontal-scroll-container mb-3">
+    <div class="horizontal-scroll-content">
       <div
         *ngFor="let artist of artists"
-        class="col-md-3 mb-4"
+        class="card artist-card me-3"
+        [class.selected]="artist.id === selectedArtistId"
         (click)="onArtistClick(artist.id)"
-        style="cursor: pointer"
       >
-        <div class="card">
-          <img
-            [src]="artist.image || 'assets/artsy_logo.svg'"
-            class="card-img-top"
-            alt="Artist Image"
-          />
-          <div class="card-body">
-            <h5 class="card-title text-center">{{ artist.name }}</h5>
-          </div>
+        <img
+          [src]="artist.image === 'static/artsy_logo.svg' ? 'assets/artsy_logo.svg' : artist.image"
+          class="card-img-top"
+          alt="{{ artist.name }}"
+        />
+        <div class="card-footer text-white text-center">
+          <h5 class="card-title m-0 p-2">{{ artist.name }}</h5>
         </div>
       </div>
     </div>
-  
-    <!-- Artist Detail View -->
-    <div *ngIf="showArtistDetails" class="mt-5">
-      <button class="btn btn-outline-secondary mb-4" (click)="backToResults()">← Back to Results</button>
-  
-      <!-- Artist Info Loading -->
-      <div *ngIf="artistLoading" class="text-center">
-        <p>Loading artist details...</p>
+  </div>
+
+  <!-- Artist Details -->
+  <div *ngIf="showArtistDetails">
+    <div *ngIf="artistLoading" class="fullscreen-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading artist details...</span>
       </div>
-  
-      <!-- Artist Info -->
-      <div *ngIf="artistDetails">
-        <h3 class="text-center">{{ artistDetails.name }}</h3>
-        <p class="text-center">{{ artistDetails.biography || 'No biography available.' }}</p>
-  
-        <!-- Artworks -->
-        <div *ngIf="artistDetails.artworks?.length > 0" class="row mt-4">
-          <div *ngFor="let artwork of artistDetails.artworks" class="col-md-3 mb-4">
-            <div class="card">
-              <img
-                [src]="artwork.image || 'assets/artsy_logo.svg'"
-                class="card-img-top"
-                alt="Artwork"
-              />
-              <div class="card-body">
-                <h6 class="card-title text-center">{{ artwork.title }}</h6>
+    </div>
+
+    <div *ngIf="!artistLoading && artistDetails">
+      <!-- Tab Buttons -->
+      <div class="tab-buttons d-flex justify-content-center mb-3">
+        <button class="tab-btn" [class.active]="activeTab === 'info'" (click)="switchTab('info')">Artist Info</button>
+        <button class="tab-btn" [class.active]="activeTab === 'artworks'" (click)="switchTab('artworks')">Artworks</button>
+      </div>
+
+      <!-- Info Tab -->
+      <div *ngIf="activeTab === 'info'">
+        <h3 class="text-center mb-1">{{ artistDetails.name }}</h3>
+        <p class="text-center text-muted small">
+          {{ artistDetails.nationality }}{{ artistDetails.birthday || artistDetails.deathday ? ', ' : '' }}
+          {{ artistDetails.birthday }}{{ artistDetails.deathday ? ' - ' + artistDetails.deathday : '' }}
+        </p>
+        <div *ngIf="artistDetails.biography">
+          <p *ngFor="let paragraph of artistDetails.biography.split('\n')" class="mb-2">
+            {{ paragraph }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Artworks Tab -->
+      <div *ngIf="activeTab === 'artworks'">
+        <div *ngIf="artworksLoading" class="fullscreen-spinner">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading artworks...</span>
+          </div>
+        </div>
+
+        <div *ngIf="!artworksLoading">
+          <div *ngIf="artistDetails.artworks?.length; else noArtworks">
+            <div class="artwork-grid">
+              <div *ngFor="let artwork of artistDetails.artworks" class="artwork-card card text-center">
+                <img
+                  [src]="artwork.image === 'static/artsy_logo.svg' ? 'assets/artsy_logo.svg' : artwork.image"
+                  class="artwork-img card-img-top"
+                  alt="{{ artwork.title }}"
+                />
+                <div class="card-body px-2 py-2">
+                  <p class="artwork-title mb-1">{{ artwork.title }}, {{ artwork.date }}</p>
+                  <button class="btn btn-outline-secondary btn-sm" (click)="fetchCategories(artwork.id)">
+                    View categories
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noArtworks>
+            <p class="text-muted text-center">No artworks found for this artist.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap Modal for Artwork Categories -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="categoryModalLabel">{{ selectedArtwork?.title }}</h5>
+          <p class="text-muted m-0">{{ selectedArtwork?.date }}</p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div *ngFor="let category of artworkCategories" class="col-6 col-sm-4 col-md-3 mb-3">
+            <div class="card h-100">
+              <img [src]="category.image" class="card-img-top" alt="{{ category.name }}">
+              <div class="card-body text-center py-2">
+                <p class="card-text small mb-0">{{ category.name }}</p>
               </div>
             </div>
           </div>
         </div>
-  
-        <div *ngIf="artistDetails.artworks?.length === 0" class="text-center text-muted mt-3">
-          No artworks found.
-        </div>
+        <div *ngIf="artworkCategories.length === 0" class="text-center text-muted">No categories found.</div>
       </div>
     </div>
-  </div>  
+  </div>
+</div>

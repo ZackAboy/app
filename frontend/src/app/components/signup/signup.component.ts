@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { RouterModule } from '@angular/router'
+import { RouterModule } from '@angular/router';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-signup',
@@ -22,7 +23,12 @@ export class SignupComponent {
   passwordError: string = '';
   fullnameError: string = '';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private userService: UserService,
+    private ngZone: NgZone // ✅ Add NgZone
+  ) {}
 
   onSignup(form: NgForm): void {
     this.clearErrors();
@@ -35,16 +41,24 @@ export class SignupComponent {
       password: this.password
     };
 
-    this.http.post('http://localhost:8080/api/auth/signup', payload, { withCredentials: true }).subscribe({
+    this.http.post<{ fullname: string; email: string; message: string }>(
+      'http://localhost:8080/api/auth/signup',
+      payload,
+      { withCredentials: true }
+    ).subscribe({
       next: (res) => {
-        console.log('Signup successful:', res);
-        this.router.navigate(['/login']);
+        console.log('✅ Signup successful:', res);
+        this.userService.setLoggedIn(res.fullname, res.email);
+
+        // ✅ Safe router navigation inside Angular zone
+        this.ngZone.run(() => {
+          this.router.navigate(['/']);
+        });
       },
       error: (err) => {
         const message = err.error?.message || 'Signup failed';
         console.error('Signup error:', message);
 
-        // 🔍 Error mapping to fields
         if (message.includes('User already exists')) {
           this.emailError = message;
         } else if (message.toLowerCase().includes('email')) {

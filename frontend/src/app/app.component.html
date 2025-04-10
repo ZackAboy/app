@@ -1,1 +1,65 @@
-<router-outlet></router-outlet>
+<!-- Header -->
+<header class="navbar-custom">
+  <div class="container">
+    <a routerLink="/" class="navbar-brand">Artist Search</a>
+    <div class="nav-buttons d-flex align-items-center">
+      <!-- Show these buttons if the user is NOT logged in -->
+      <ng-container *ngIf="!isLoggedIn; else loggedInLinks">
+        <button type="button"
+                [routerLink]="'/'"
+                class="btn btn-outline-primary"
+                [class.active]="currentRoute === '/'">
+          Search
+        </button>
+        <button type="button"
+                [routerLink]="'/login'"
+                class="btn btn-outline-primary"
+                [class.active]="currentRoute === '/login'">
+          Login
+        </button>
+        <button type="button"
+                [routerLink]="'/signup'"
+                class="btn btn-outline-primary"
+                [class.active]="currentRoute === '/signup'">
+          Register
+        </button>
+      </ng-container>
+
+      <!-- When logged in -->
+      <ng-template #loggedInLinks>
+        <button type="button"
+                [routerLink]="'/search'"
+                class="btn btn-outline-primary"
+                [class.active]="currentRoute === '/search'">
+          Search
+        </button>
+        <button type="button"
+                [routerLink]="'/favorites'"
+                class="btn btn-outline-primary"
+                [class.active]="currentRoute === '/favorites'">
+          Favorites
+        </button>
+        <button type="button"
+                (click)="logout()"
+                class="btn btn-outline-danger">
+          Logout
+        </button>
+        <span class="welcome-text">Welcome, {{ userName }}</span>
+      </ng-template>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="flex-grow-1">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Footer -->
+<footer class="footer-custom">
+  <div class="container">
+    <span>Powered by</span>
+    <img src="assets/artsy_logo.svg" alt="Artsy Logo" class="footer-logo" />
+    <a href="https://www.artsy.net" class="footer-link">Artsy</a>
+  </div>
+</footer>

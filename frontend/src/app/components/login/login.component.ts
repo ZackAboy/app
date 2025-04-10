@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { RouterModule } from '@angular/router'
+import { RouterModule } from '@angular/router';
+import { UserService } from '../../services/user.service';
+import { NgZone } from '@angular/core';
 
 @Component({
   selector: 'app-login',
@@ -17,10 +19,14 @@ export class LoginComponent {
   password: string = '';
   errorMessage: string = '';
 
-  // ✅ Use environment-based URL for easy switching later
   private readonly API_URL = 'http://localhost:8080/api/auth/login';
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private userService: UserService,
+    private ngZone: NgZone // ✅ Add this
+  ) {}  
 
   onLogin(): void {
     this.errorMessage = '';
@@ -29,11 +35,18 @@ export class LoginComponent {
       email: this.email,
       password: this.password
     }, {
-      withCredentials: true  // ✅ Needed for cookie-based auth
+      withCredentials: true
     }).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         console.log('✅ Login successful:', res);
-        this.router.navigate(['/search']);
+      
+        // ✅ Update the user service with fullname and email
+        this.userService.setLoggedIn(res.fullname, res.email);
+      
+        // ✅ Navigate to search
+        this.ngZone.run(() => {
+          this.router.navigate(['/']);
+        });               
       },
       error: (err) => {
         console.error('❌ Login error:', err);
